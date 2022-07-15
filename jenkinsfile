@@ -1,0 +1,44 @@
+pipeline
+{
+    agent any
+    stages
+   {
+           stage ('ContinuousDownload')
+        {
+            steps
+            {
+              git 'https://github.com/Hari2658/maven.git'
+            }
+        }
+           stage ('ContinuousBuild')
+        {
+            steps
+            {
+              sh 'mvn package'
+            }
+        }
+        stage ('ContinuousDeployment')
+        {
+            steps
+            {
+              deploy adapters: [tomcat9(credentialsId: 'f359bf19-2d91-4a93-9b3d-87776ff7a657', path: '', url: 'http://172.31.83.227:8080')], contextPath: 'anjuapp', war: '**/*.war'
+            }
+        }
+        stage ('ContinuousTesting')
+        {
+            steps
+            {
+              git 'https://github.com/Hari2658/HariTestingcode.git'
+              sh 'java -jar /home/ubuntu/.jenkins/workspace/DeclarativePipeline1/testing.jar'
+            }
+        }
+         stage ('ContinuousDelivery')
+        {
+            steps
+            {
+              input message: 'Need approval for manager directly', submitter: 'Anjali'
+              deploy adapters: [tomcat9(credentialsId: 'f359bf19-2d91-4a93-9b3d-87776ff7a657', path: '', url: 'http://172.31.87.83:8080')], contextPath: 'edigaapp', war: '**/*.war'
+            }
+        }
+    }
+}
